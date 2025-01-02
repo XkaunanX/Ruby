@@ -20,6 +20,22 @@ Ruby no utiliza punteros de la misma manera que lenguajes como C o C++. En lugar
 
 Ruby es principalmente un lenguaje orientado a objetos, lo que significa que casi todo en Ruby es un objeto. Ademas, soporta otros paradigmas como la programacion funcional y la programacion imperativa, lo que le otorga gran flexibilidad. Los objetos en Ruby tienen metodos y propiedades, lo que permite organizar el codigo de manera modular y reutilizable.
 
+```ruby
+class Persona
+  def initialize(nombre, edad)
+    @nombre = nombre
+    @edad = edad
+  end
+
+  def saludar
+    puts "Hola, mi nombre es #{@nombre} y tengo #{@edad} años."
+  end
+end
+
+persona1 = Persona.new("Juan", 25)
+persona1.saludar
+```
+
 ### Tipo de Tipado
 
 Ruby utiliza tipado dinamico, lo que significa que las variables no necesitan ser declaradas con un tipo especifico. El tipo de una variable es determinado en tiempo de ejecucion, lo que permite una mayor flexibilidad pero tambien puede llevar a errores si no se gestionan correctamente.
@@ -31,6 +47,44 @@ Ruby es un lenguaje interpretado, no compilado. Esto significa que el codigo Rub
 ### Ruby en la Web
 
 Ruby es muy popular en el desarrollo web, principalmente debido al marco de trabajo Ruby on Rails, que facilita el desarrollo rapido de aplicaciones web. Rails proporciona una estructura para el desarrollo de aplicaciones basadas en el modelo vista-controlador (MVC) y ayuda a reducir el tiempo de desarrollo.
+
+```ruby
+# Un ejemplo básico de un controlador en Ruby on Rails
+
+class ArticlesController < ApplicationController
+  # Acción para mostrar todos los artículos
+  def index
+    @articles = Article.all
+  end
+
+  # Acción para mostrar un artículo específico
+  def show
+    @article = Article.find(params[:id])
+  end
+
+  # Acción para crear un nuevo artículo
+  def new
+    @article = Article.new
+  end
+
+  # Acción para guardar un artículo nuevo
+  def create
+    @article = Article.new(article_params)
+    if @article.save
+      redirect_to @article
+    else
+      render :new
+    end
+  end
+
+  private
+
+  # Parámetros permitidos para evitar la inyección de datos no deseados
+  def article_params
+    params.require(:article).permit(:title, :body)
+  end
+end
+```
 
 ### Manejo de Memoria
 
@@ -48,6 +102,106 @@ Ruby permite la programacion concurrente a traves de hilos (threads). Sin embarg
 
 Ruby es muy utilizado en el desarrollo de API RESTful. A traves de frameworks como Ruby on Rails y Sinatra, es posible construir facilmente aplicaciones que exponen servicios a traves de HTTP y permiten la comunicacion entre diferentes sistemas.
 
+```ruby
+# Configuración de rutas en config/routes.rb
+Rails.application.routes.draw do
+  resources :articles, only: [:index, :show, :create, :update, :destroy]
+  # Se definen las rutas para las acciones RESTful
+end
+
+# Controlador de la API en app/controllers/articles_controller.rb
+class ArticlesController < ApplicationController
+  # Desactiva la verificación CSRF para API (solo en este ejemplo)
+  skip_before_action :verify_authenticity_token
+  
+  # GET /articles - Obtener todos los artículos
+  def index
+    @articles = Article.all
+    render json: @articles, status: :ok
+  end
+
+  # GET /articles/:id - Obtener un artículo por ID
+  def show
+    @article = Article.find_by(id: params[:id])
+    if @article
+      render json: @article, status: :ok
+    else
+      render json: { error: "Article not found" }, status: :not_found
+    end
+  end
+
+  # POST /articles - Crear un nuevo artículo
+  def create
+    @article = Article.new(article_params)
+    if @article.save
+      render json: @article, status: :created
+    else
+      render json: { error: @article.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  # PUT /articles/:id - Actualizar un artículo existente
+  def update
+    @article = Article.find_by(id: params[:id])
+    if @article
+      if @article.update(article_params)
+        render json: @article, status: :ok
+      else
+        render json: { error: @article.errors.full_messages }, status: :unprocessable_entity
+      end
+    else
+      render json: { error: "Article not found" }, status: :not_found
+    end
+  end
+
+  # DELETE /articles/:id - Eliminar un artículo
+  def destroy
+    @article = Article.find_by(id: params[:id])
+    if @article
+      @article.destroy
+      render json: { message: "Article deleted" }, status: :ok
+    else
+      render json: { error: "Article not found" }, status: :not_found
+    end
+  end
+
+  private
+
+  # Filtro de parámetros permitidos para proteger contra inyecciones
+  def article_params
+    params.require(:article).permit(:title, :body)
+  end
+end
+
+# Modelo Article en app/models/article.rb
+class Article < ApplicationRecord
+  validates :title, presence: true
+  validates :body, presence: true
+end
+```
+
 ### Metaprogramacion
 
 Ruby soporta la metaprogramacion, que permite escribir codigo que modifica o genera otros codigos en tiempo de ejecucion. Esto incluye la capacidad de definir metodos dinamicamente, alterar clases y objetos, y modificar la estructura del programa en tiempo real. La metaprogramacion es una caracteristica poderosa, pero debe ser utilizada con cuidado para evitar que el codigo se vuelva complejo e impredecible.
+
+```ruby
+class Persona
+  # Usamos metaprogramación para definir métodos dinámicamente
+  def self.crear_metodo(nombre)
+    define_method(nombre) do
+      "Este es el método #{nombre}"
+    end
+  end
+end
+
+# Creamos un método dinámico llamado 'saludar'
+Persona.crear_metodo("saludar")
+
+# Ahora podemos llamar al método 'saludar' en una instancia de Persona
+persona = Persona.new
+puts persona.saludar  # Salida: Este es el método saludar
+
+# Crear otro método dinámico llamado 'despedirse'
+Persona.crear_metodo("despedirse")
+puts persona.despedirse  # Salida: Este es el método despedirse
+```
